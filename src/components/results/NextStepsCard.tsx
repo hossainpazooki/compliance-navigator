@@ -90,7 +90,7 @@ function computeNextSteps(result: NavigateResponse): NextStep[] {
 
   // Priority 3: First actionable pathway step (not completed/waived)
   const pendingSteps = result.pathway.filter(
-    s => s.status === 'pending' || s.status === 'in_progress'
+    s => s.status === 'pending'
   );
   if (pendingSteps.length > 0) {
     const firstStep = pendingSteps[0];

@@ -1,15 +1,13 @@
 import type {
   DecisionNode,
   ConditionNode,
-  LeafNode,
   Condition,
-  ConditionOp,
   Facts,
   TraceNode,
   EvaluationResult,
   PartialEvaluationResult,
 } from '@/types/decisionTree';
-import { isConditionNode, isLeafNode } from '@/types/decisionTree';
+import { isLeafNode } from '@/types/decisionTree';
 
 /**
  * Get a nested value from an object using dot-path notation
@@ -112,8 +110,6 @@ export function evaluateCondition(
       return isSome(factValue);
 
     default:
-      // Exhaustive check - should never reach here
-      const _exhaustive: never = op;
       return false;
   }
 }
