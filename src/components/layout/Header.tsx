@@ -8,8 +8,8 @@ export function Header() {
   useEffect(() => {
     const checkBackend = async () => {
       try {
-        // Try to hit a simple endpoint to check connectivity
-        await apiClient.get('/navigate/jurisdictions');
+        // Use the health endpoint for connectivity check
+        await apiClient.get('/health');
         setBackendStatus('connected');
       } catch {
         setBackendStatus('error');
