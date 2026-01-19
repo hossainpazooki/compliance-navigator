@@ -1,5 +1,5 @@
 import { cn } from '@/utils';
-import { JURISDICTION_LIST, getJurisdictionColor } from '@/constants';
+import { JURISDICTION_LIST } from '@/constants';
 import type { JurisdictionCode } from '@/types/common';
 
 interface JurisdictionSelectorProps {
@@ -13,7 +13,7 @@ interface JurisdictionSelectorProps {
 export function JurisdictionSelector({
   selected,
   onChange,
-  multiple = true,
+  multiple: _multiple = true,
   label,
   disabledJurisdictions = [],
 }: JurisdictionSelectorProps) {
