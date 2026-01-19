@@ -1,13 +1,24 @@
 import { useNavigationStore } from '@/stores';
 import { useNavigate } from '@/hooks';
-import { Button } from '@/components/shared';
+import { Button, Tooltip, HelpIcon } from '@/components/shared';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/shared';
 import {
   SingleJurisdictionSelector,
   JurisdictionSelector,
 } from './JurisdictionSelector';
-import { INSTRUMENT_TYPES, ACTIVITY_TYPES, INVESTOR_TYPES } from '@/constants';
+import { INSTRUMENT_TYPES, ACTIVITY_TYPES, INVESTOR_TYPES, SECTION_HELP } from '@/constants';
 import { cn } from '@/utils';
+
+function SectionLabel({ label, helpText }: { label: string; helpText: string }) {
+  return (
+    <div className="mb-2 flex items-center gap-2">
+      <label className="text-sm font-medium text-slate-300">{label}</label>
+      <Tooltip content={helpText}>
+        <HelpIcon />
+      </Tooltip>
+    </div>
+  );
+}
 
 export function NavigationForm() {
   const {
@@ -40,25 +51,36 @@ export function NavigationForm() {
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Issuer Jurisdiction */}
-          <SingleJurisdictionSelector
-            label="Issuer Home Jurisdiction"
-            selected={issuerJurisdiction}
-            onChange={setIssuerJurisdiction}
-          />
+          <div>
+            <SectionLabel
+              label="Issuer Home Jurisdiction"
+              helpText={SECTION_HELP.issuerJurisdiction}
+            />
+            <SingleJurisdictionSelector
+              selected={issuerJurisdiction}
+              onChange={setIssuerJurisdiction}
+            />
+          </div>
 
           {/* Target Jurisdictions */}
-          <JurisdictionSelector
-            label="Target Markets"
-            selected={targetJurisdictions}
-            onChange={toggleTargetJurisdiction}
-            disabledJurisdictions={[issuerJurisdiction]}
-          />
+          <div>
+            <SectionLabel
+              label="Target Markets"
+              helpText={SECTION_HELP.targetMarkets}
+            />
+            <JurisdictionSelector
+              selected={targetJurisdictions}
+              onChange={toggleTargetJurisdiction}
+              disabledJurisdictions={[issuerJurisdiction]}
+            />
+          </div>
 
           {/* Instrument Type */}
           <div>
-            <label className="mb-2 block text-sm font-medium text-slate-300">
-              Instrument Type
-            </label>
+            <SectionLabel
+              label="Instrument Type"
+              helpText={SECTION_HELP.instrumentType}
+            />
             <div className="grid grid-cols-3 gap-2">
               {INSTRUMENT_TYPES.map((type) => (
                 <button
@@ -83,9 +105,10 @@ export function NavigationForm() {
 
           {/* Activity Type */}
           <div>
-            <label className="mb-2 block text-sm font-medium text-slate-300">
-              Activity Type
-            </label>
+            <SectionLabel
+              label="Activity Type"
+              helpText={SECTION_HELP.activityType}
+            />
             <div className="grid grid-cols-3 gap-2">
               {ACTIVITY_TYPES.map((type) => (
                 <button
@@ -110,9 +133,10 @@ export function NavigationForm() {
 
           {/* Investor Types */}
           <div>
-            <label className="mb-2 block text-sm font-medium text-slate-300">
-              Target Investor Types (select applicable)
-            </label>
+            <SectionLabel
+              label="Target Investor Types (select applicable)"
+              helpText={SECTION_HELP.investorTypes}
+            />
             <div className="grid grid-cols-4 gap-2">
               {INVESTOR_TYPES.map((type) => (
                 <button
@@ -137,9 +161,10 @@ export function NavigationForm() {
 
           {/* Amount */}
           <div>
-            <label className="mb-2 block text-sm font-medium text-slate-300">
-              Offering Amount (USD)
-            </label>
+            <SectionLabel
+              label="Offering Amount (USD)"
+              helpText={SECTION_HELP.amount}
+            />
             <input
               type="number"
               value={amount}

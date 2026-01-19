@@ -1,7 +1,9 @@
 import { useResultsStore } from '@/stores';
-import { Card, CardHeader, CardTitle, CardContent, Badge } from '@/components/shared';
+import { Card, CardHeader, CardTitle, Badge } from '@/components/shared';
 import { formatStatus } from '@/utils';
 import { JurisdictionCard } from './JurisdictionCard';
+import { NextStepsCard } from './NextStepsCard';
+import { QuickStats } from './QuickStats';
 
 export function ResultsSummary() {
   const { navigationResult } = useResultsStore();
@@ -35,9 +37,9 @@ export function ResultsSummary() {
 
   return (
     <div className="space-y-6">
-      {/* Summary Card */}
+      {/* Summary Header */}
       <Card variant="bordered">
-        <CardHeader>
+        <CardHeader className="pb-4">
           <CardTitle className="flex items-center gap-2">
             <span className="text-emerald-400">✓</span>
             Analysis Complete
@@ -49,37 +51,13 @@ export function ResultsSummary() {
             <Badge variant={riskVariant}>{riskLevel} RISK</Badge>
           </div>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-4 gap-4">
-            <div className="rounded-lg bg-slate-700/50 p-4">
-              <p className="text-sm text-slate-400">Jurisdictions</p>
-              <p className="text-2xl font-bold text-white">
-                {navigationResult.applicable_jurisdictions.length}
-              </p>
-            </div>
-            <div className="rounded-lg bg-slate-700/50 p-4">
-              <p className="text-sm text-slate-400">Pathway Steps</p>
-              <p className="text-2xl font-bold text-white">
-                {navigationResult.pathway.length}
-              </p>
-            </div>
-            <div className="rounded-lg bg-slate-700/50 p-4">
-              <p className="text-sm text-slate-400">Conflicts</p>
-              <p className={`text-2xl font-bold ${
-                navigationResult.conflicts.length > 0 ? 'text-yellow-400' : 'text-white'
-              }`}>
-                {navigationResult.conflicts.length}
-              </p>
-            </div>
-            <div className="rounded-lg bg-slate-700/50 p-4">
-              <p className="text-sm text-slate-400">Est. Timeline</p>
-              <p className="text-2xl font-bold text-white">
-                {navigationResult.estimated_timeline}
-              </p>
-            </div>
-          </div>
-        </CardContent>
       </Card>
+
+      {/* Next Steps - Action-Oriented Guidance */}
+      <NextStepsCard result={navigationResult} />
+
+      {/* Quick Stats */}
+      <QuickStats result={navigationResult} />
 
       {/* Jurisdiction Cards */}
       <div>

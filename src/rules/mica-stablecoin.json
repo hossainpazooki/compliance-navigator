@@ -1,0 +1,228 @@
+{
+  "id": "mica-stablecoin-auth",
+  "version": "2024.Q4.1",
+  "name": "MiCA Stablecoin Authorization",
+  "description": "Determines authorization requirements for stablecoins under MiCA (EU) 2023/1114",
+  "metadata": {
+    "jurisdiction": "EU",
+    "framework": "MiCA 2023/1114",
+    "effectiveDate": "2024-06-30",
+    "tags": ["stablecoin", "EMT", "ART", "authorization"]
+  },
+  "tree": {
+    "nodeId": "root",
+    "type": "condition",
+    "condition": {
+      "fact": "instrument.type",
+      "op": "eq",
+      "value": "stablecoin"
+    },
+    "sourceRef": {
+      "document_id": "MiCA",
+      "article": "3",
+      "paragraph": "1(5)",
+      "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32023R1114"
+    },
+    "annotation": "Is the instrument a stablecoin?",
+    "children": {
+      "true": {
+        "nodeId": "check-reference-asset",
+        "type": "condition",
+        "condition": {
+          "fact": "instrument.reference_asset",
+          "op": "eq",
+          "value": "fiat_single"
+        },
+        "sourceRef": {
+          "document_id": "MiCA",
+          "article": "3",
+          "paragraph": "1(7)"
+        },
+        "annotation": "Is the stablecoin referenced to a single fiat currency (EMT)?",
+        "children": {
+          "true": {
+            "nodeId": "is-significant-emt",
+            "type": "condition",
+            "condition": {
+              "fact": "instrument.reserve_value_eur",
+              "op": "gte",
+              "value": 5000000000
+            },
+            "sourceRef": {
+              "document_id": "MiCA",
+              "article": "43",
+              "paragraph": "1"
+            },
+            "annotation": "Does the EMT have reserves >= EUR 5 billion (significant)?",
+            "children": {
+              "true": {
+                "nodeId": "significant-emt-leaf",
+                "type": "leaf",
+                "decision": "Significant EMT: Subject to enhanced authorization and EBA supervision",
+                "status": "requires_action",
+                "obligations": [
+                  "eba-authorization",
+                  "reserve-requirements-enhanced",
+                  "quarterly-reporting-eba",
+                  "recovery-plan",
+                  "redemption-plan"
+                ],
+                "sourceRef": {
+                  "document_id": "MiCA",
+                  "article": "43-45",
+                  "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32023R1114#d1e4567-1-1"
+                }
+              },
+              "false": {
+                "nodeId": "check-emt-issuer-type",
+                "type": "condition",
+                "condition": {
+                  "fact": "issuer.type",
+                  "op": "in",
+                  "value": ["credit_institution", "e_money_institution"]
+                },
+                "sourceRef": {
+                  "document_id": "MiCA",
+                  "article": "48",
+                  "paragraph": "1"
+                },
+                "annotation": "Is the issuer already a credit institution or e-money institution?",
+                "children": {
+                  "true": {
+                    "nodeId": "emt-authorized-issuer-leaf",
+                    "type": "leaf",
+                    "decision": "EMT by authorized institution: Notification and whitepaper required",
+                    "status": "requires_action",
+                    "obligations": [
+                      "nca-notification",
+                      "whitepaper-publication",
+                      "reserve-requirements-standard",
+                      "redemption-rights"
+                    ],
+                    "sourceRef": {
+                      "document_id": "MiCA",
+                      "article": "48",
+                      "paragraph": "1-2"
+                    }
+                  },
+                  "false": {
+                    "nodeId": "emt-new-issuer-leaf",
+                    "type": "leaf",
+                    "decision": "EMT by new issuer: E-money institution authorization required",
+                    "status": "requires_action",
+                    "obligations": [
+                      "e-money-license",
+                      "nca-authorization",
+                      "whitepaper-approval",
+                      "reserve-requirements-standard",
+                      "redemption-rights",
+                      "minimum-capital"
+                    ],
+                    "sourceRef": {
+                      "document_id": "MiCA",
+                      "article": "48",
+                      "paragraph": "3"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "false": {
+            "nodeId": "is-art",
+            "type": "condition",
+            "condition": {
+              "fact": "instrument.reference_asset",
+              "op": "in",
+              "value": ["fiat_basket", "commodity", "crypto_basket", "mixed"]
+            },
+            "sourceRef": {
+              "document_id": "MiCA",
+              "article": "3",
+              "paragraph": "1(6)"
+            },
+            "annotation": "Is it an asset-referenced token (ART)?",
+            "children": {
+              "true": {
+                "nodeId": "is-significant-art",
+                "type": "condition",
+                "condition": {
+                  "fact": "instrument.market_cap_eur",
+                  "op": "gte",
+                  "value": 5000000000
+                },
+                "sourceRef": {
+                  "document_id": "MiCA",
+                  "article": "43",
+                  "paragraph": "1"
+                },
+                "annotation": "Does the ART have market cap >= EUR 5 billion?",
+                "children": {
+                  "true": {
+                    "nodeId": "significant-art-leaf",
+                    "type": "leaf",
+                    "decision": "Significant ART: Subject to enhanced authorization and EBA supervision",
+                    "status": "requires_action",
+                    "obligations": [
+                      "eba-authorization",
+                      "enhanced-reserve-requirements",
+                      "quarterly-reporting-eba",
+                      "recovery-plan",
+                      "liquidity-requirements"
+                    ],
+                    "sourceRef": {
+                      "document_id": "MiCA",
+                      "article": "43-45"
+                    }
+                  },
+                  "false": {
+                    "nodeId": "standard-art-leaf",
+                    "type": "leaf",
+                    "decision": "Standard ART: NCA authorization required",
+                    "status": "requires_action",
+                    "obligations": [
+                      "nca-authorization",
+                      "whitepaper-approval",
+                      "reserve-requirements",
+                      "own-funds-requirement",
+                      "governance-arrangements"
+                    ],
+                    "sourceRef": {
+                      "document_id": "MiCA",
+                      "article": "16-18"
+                    }
+                  }
+                }
+              },
+              "false": {
+                "nodeId": "other-crypto-leaf",
+                "type": "leaf",
+                "decision": "Other crypto-asset: General MiCA provisions apply if utility token",
+                "status": "requires_action",
+                "obligations": [
+                  "whitepaper-notification",
+                  "marketing-compliance"
+                ],
+                "sourceRef": {
+                  "document_id": "MiCA",
+                  "article": "4-6"
+                }
+              }
+            }
+          }
+        }
+      },
+      "false": {
+        "nodeId": "not-stablecoin-leaf",
+        "type": "leaf",
+        "decision": "Not a stablecoin - MiCA stablecoin provisions do not apply",
+        "status": "no_applicable_rules",
+        "sourceRef": {
+          "document_id": "MiCA",
+          "article": "3",
+          "paragraph": "1(5-7)"
+        }
+      }
+    }
+  }
+}
