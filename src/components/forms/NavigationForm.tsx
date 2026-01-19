@@ -8,7 +8,6 @@ import {
 } from './JurisdictionSelector';
 import { INSTRUMENT_TYPES, ACTIVITY_TYPES, INVESTOR_TYPES } from '@/constants';
 import { cn } from '@/utils';
-import { formatCurrency } from '@/utils';
 
 export function NavigationForm() {
   const {

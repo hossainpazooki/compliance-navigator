@@ -46,6 +46,7 @@ export type InstrumentType =
   | 'utility_token'
   | 'nft'
   | 'governance_token'
+  | 'lp_token'
   | 'other';
 
 // Activity types
