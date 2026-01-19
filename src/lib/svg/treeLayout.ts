@@ -63,16 +63,6 @@ export interface TreeLayout {
 }
 
 /**
- * Calculate the width of a subtree (number of leaf nodes)
- */
-function getSubtreeWidth(node: DecisionNode): number {
-  if (isLeafNode(node)) {
-    return 1;
-  }
-  return getSubtreeWidth(node.children.true) + getSubtreeWidth(node.children.false);
-}
-
-/**
  * Calculate tree layout using a simple recursive algorithm
  * Based on Reingold-Tilford style layout
  */
@@ -173,7 +163,7 @@ export function calculateLayout(
     return { x: leftBound, width: totalWidth };
   }
 
-  const result = layoutNode(tree, 0, 0);
+  layoutNode(tree, 0, 0);
 
   // Calculate total dimensions
   const maxX = Math.max(...nodes.map(n => n.x + n.width));

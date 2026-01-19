@@ -1,6 +1,5 @@
 import type { LayoutNode } from '@/lib/svg/treeLayout';
 import type { ConditionNode, LeafNode } from '@/types/decisionTree';
-import { isLeafNode } from '@/types/decisionTree';
 
 interface TreeNodeProps {
   layoutNode: LayoutNode;
