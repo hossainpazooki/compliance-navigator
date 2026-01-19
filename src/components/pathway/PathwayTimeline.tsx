@@ -8,20 +8,6 @@ interface PathwayTimelineProps {
 }
 
 export function PathwayTimeline({ steps, estimatedTimeline }: PathwayTimelineProps) {
-  // Group steps by jurisdiction for summary (reserved for future use)
-  const _jurisdictionSummary = steps.reduce(
-    (acc, step) => {
-      if (!acc[step.jurisdiction]) {
-        acc[step.jurisdiction] = { total: 0, completed: 0, waived: 0 };
-      }
-      acc[step.jurisdiction].total++;
-      if (step.status === 'completed') acc[step.jurisdiction].completed++;
-      if (step.status === 'waived') acc[step.jurisdiction].waived++;
-      return acc;
-    },
-    {} as Record<string, { total: number; completed: number; waived: number }>
-  );
-
   const completedSteps = steps.filter((s) => s.status === 'completed').length;
   const waivedSteps = steps.filter((s) => s.status === 'waived').length;
   const progress = steps.length > 0
