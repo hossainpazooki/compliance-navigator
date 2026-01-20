@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { Badge } from '@/components/shared';
-import { JURISDICTIONS, INSTRUMENT_TYPES, ACTIVITY_TYPES, INVESTOR_TYPES } from '@/constants';
+import { JURISDICTION_LIST, INSTRUMENT_TYPES, ACTIVITY_TYPES, INVESTOR_TYPES } from '@/constants';
 import type { JurisdictionCode, InstrumentType, ActivityType, InvestorType } from '@/types/common';
 import { cn } from '@/utils';
 
@@ -32,12 +32,12 @@ export function ScenarioSummary({
   onExpand,
 }: ScenarioSummaryProps) {
   const issuerLabel = useMemo(() => {
-    return JURISDICTIONS.find((j) => j.code === issuerJurisdiction)?.code || issuerJurisdiction;
+    return JURISDICTION_LIST.find((j) => j.code === issuerJurisdiction)?.code || issuerJurisdiction;
   }, [issuerJurisdiction]);
 
   const targetLabels = useMemo(() => {
     return targetJurisdictions
-      .map((code) => JURISDICTIONS.find((j) => j.code === code)?.code || code)
+      .map((code) => JURISDICTION_LIST.find((j) => j.code === code)?.code || code)
       .join(', ');
   }, [targetJurisdictions]);
 

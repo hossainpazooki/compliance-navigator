@@ -107,7 +107,7 @@ export function RightRail() {
                 onGenerate={handleGenerateExplanation}
                 onCitationClick={handleCitationClick}
                 onCitationHighlight={handleCitationHover}
-                highlightedCitationId={highlightedCitationId}
+                highlightedCitationId={highlightedCitationId ?? undefined}
               />
             </div>
           ) : (

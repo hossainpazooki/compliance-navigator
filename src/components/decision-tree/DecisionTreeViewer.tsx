@@ -1,12 +1,11 @@
 import { useState, useRef, useCallback, useMemo } from 'react';
 import type { DecisionNode, TraceNode, LeafNode, ConditionNode } from '@/types/decisionTree';
+import type { JurisdictionCode } from '@/types/common';
 import { isLeafNode, isGroupNode } from '@/types/decisionTree';
 import { calculateLayout, getPathFromTrace, DEFAULT_LAYOUT_CONFIG } from '@/lib/svg/treeLayout';
 import { TreeNode } from './TreeNode';
 import { TreeEdge } from './TreeEdge';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/shared';
-import type { JurisdictionCode } from '@/types/common';
-import { cn } from '@/utils';
 
 export type HighlightSource = 'jurisdiction' | 'pathway' | 'conflict' | 'decoder' | 'search';
 export type ViewMode = 'baseline' | 'whatif-diff' | 'conflict-overlay';
@@ -65,9 +64,9 @@ export function DecisionTreeViewer({
   onNodeSelect,
   highlightedNodeIds,
   highlightSource,
-  jurisdictionFilter,
+  jurisdictionFilter: _jurisdictionFilter,
   viewMode = 'baseline',
-  diffOverlay,
+  diffOverlay: _diffOverlay,
   onNodeHover,
   onGroupToggle,
   collapsedGroups: externalCollapsedGroups,

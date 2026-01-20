@@ -81,7 +81,7 @@ export function useDecoderAnchors(
 
   // Handle citation hover
   const handleCitationHover = useCallback(
-    (citationId: string | null, citations?: Citation[]) => {
+    (citationId: string | null, _citations?: Citation[]) => {
       setHighlightedCitationId(citationId);
 
       if (citationId && onHighlightTreeNodes) {

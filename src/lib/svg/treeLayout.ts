@@ -1,5 +1,5 @@
-import type { DecisionNode } from '@/types/decisionTree';
-import { isLeafNode } from '@/types/decisionTree';
+import type { DecisionNode, ConditionNode } from '@/types/decisionTree';
+import { isLeafNode, isConditionNode } from '@/types/decisionTree';
 
 /**
  * Layout configuration for tree rendering
@@ -101,9 +101,28 @@ export function calculateLayout(
       return { x, width: nodeWidth + horizontalSpacing };
     }
 
-    // Layout children first
-    const leftChild = layoutNode(node.children.false, depth + 1, leftBound);
-    const rightChild = layoutNode(node.children.true, depth + 1, leftBound + leftChild.width);
+    // Only ConditionNodes have true/false children for binary tree layout
+    if (!isConditionNode(node)) {
+      // For GroupNode, RouterNode, ConflictAnchorNode - render as single node for now
+      const x = leftBound;
+      nodes.push({
+        id: node.nodeId,
+        x: x + padding,
+        y: depth * (nodeHeight + verticalSpacing) + padding,
+        width: nodeWidth,
+        height: nodeHeight,
+        node,
+        depth,
+        isLeaf: false,
+        isOnPath,
+      });
+      return { x, width: nodeWidth + horizontalSpacing };
+    }
+
+    // Layout children first (ConditionNode has true/false children)
+    const conditionNode = node as ConditionNode;
+    const leftChild = layoutNode(conditionNode.children.false, depth + 1, leftBound);
+    const rightChild = layoutNode(conditionNode.children.true, depth + 1, leftBound + leftChild.width);
 
     // Position this node centered above children
     const totalWidth = leftChild.width + rightChild.width;
@@ -127,8 +146,8 @@ export function calculateLayout(
     const parentBottomY = layoutNodeData.y + nodeHeight;
 
     // Find child nodes
-    const falseChild = nodes.find(n => n.id === node.children.false.nodeId);
-    const trueChild = nodes.find(n => n.id === node.children.true.nodeId);
+    const falseChild = nodes.find(n => n.id === conditionNode.children.false.nodeId);
+    const trueChild = nodes.find(n => n.id === conditionNode.children.true.nodeId);
 
     if (falseChild) {
       const isEdgeOnPath = isOnPath && evaluationPath?.has(falseChild.id);

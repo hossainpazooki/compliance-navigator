@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { Badge, Button, Tooltip } from '@/components/shared';
-import { JURISDICTIONS } from '@/constants';
+import { JURISDICTION_LIST } from '@/constants';
 import type { JurisdictionCode } from '@/types/common';
 import type { ViewMode } from '@/components/decision-tree/DecisionTreeViewer';
 import { cn } from '@/utils';
@@ -71,7 +71,7 @@ export function TreeToolbar({
 }: TreeToolbarProps) {
   const jurisdictionOptions = useMemo(() => {
     return availableJurisdictions.map((code) => {
-      const jurisdiction = JURISDICTIONS.find((j) => j.code === code);
+      const jurisdiction = JURISDICTION_LIST.find((j) => j.code === code);
       return {
         code,
         label: jurisdiction?.name || code,

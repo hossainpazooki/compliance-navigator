@@ -10,7 +10,7 @@ import { useResultsStore } from '@/stores';
 import { Badge, Button } from '@/components/shared';
 import { WorkbenchArea } from './CanvasLayout';
 import { PanelHeader } from './PanelHeader';
-import { JURISDICTIONS } from '@/types/common';
+import { JURISDICTION_MAP } from '@/constants';
 
 type WorkbenchTab = 'jurisdictions' | 'pathway' | 'conflicts' | 'whatif';
 
@@ -30,8 +30,8 @@ export function BottomWorkbench() {
   const isExpanded = panels.workbench === 'expanded';
 
   // Counts for badges
-  const jurisdictionCount = navigationResult?.results.length || 0;
-  const pathwaySteps = navigationResult?.pathway?.steps.length || 0;
+  const jurisdictionCount = navigationResult?.jurisdiction_results.length || 0;
+  const pathwaySteps = navigationResult?.pathway?.length || 0;
   const conflictCount = navigationResult?.conflicts?.length || 0;
 
   // Build summary for collapsed state
@@ -89,7 +89,7 @@ export function BottomWorkbench() {
               {/* Jurisdictions Tab */}
               {activeTab === 'jurisdictions' && (
                 <div className="flex gap-4 overflow-x-auto pb-2">
-                  {navigationResult?.results.map((result) => (
+                  {navigationResult?.jurisdiction_results.map((result) => (
                     <div
                       key={result.jurisdiction}
                       className="shrink-0 rounded-lg border border-slate-700 bg-slate-800/50 p-4"
@@ -97,10 +97,10 @@ export function BottomWorkbench() {
                     >
                       <div className="mb-2 flex items-center gap-2">
                         <span className="text-xl">
-                          {JURISDICTIONS[result.jurisdiction]?.flag}
+                          {JURISDICTION_MAP[result.jurisdiction]?.flag}
                         </span>
                         <span className="font-medium text-white">
-                          {JURISDICTIONS[result.jurisdiction]?.name}
+                          {JURISDICTION_MAP[result.jurisdiction]?.name}
                         </span>
                       </div>
                       <Badge
@@ -125,7 +125,7 @@ export function BottomWorkbench() {
               {/* Pathway Tab */}
               {activeTab === 'pathway' && (
                 <div className="flex gap-4 overflow-x-auto pb-2">
-                  {navigationResult?.pathway?.steps.map((step, i) => (
+                  {navigationResult?.pathway?.map((step, i) => (
                     <div
                       key={i}
                       className="relative shrink-0 rounded-lg border border-slate-700 bg-slate-800/50 p-4"
@@ -140,9 +140,9 @@ export function BottomWorkbench() {
                         </span>
                       </div>
                       <p className="text-xs text-slate-400">
-                        {step.timeline || 'Timeline TBD'}
+                        {step.timeline ? `${step.timeline.min_days}-${step.timeline.max_days} days` : 'Timeline TBD'}
                       </p>
-                      {i < (navigationResult?.pathway?.steps.length || 0) - 1 && (
+                      {i < (navigationResult?.pathway?.length || 0) - 1 && (
                         <div className="absolute -right-3 top-1/2 text-slate-500">
                           →
                         </div>

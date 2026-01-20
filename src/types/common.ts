@@ -2,14 +2,18 @@
 export type JurisdictionCode = 'EU' | 'UK' | 'US' | 'CH' | 'SG';
 
 // Jurisdiction roles in cross-border scenarios
-export type JurisdictionRole = 'issuer_home' | 'target' | 'passporting';
+export type JurisdictionRole = 'issuer_home' | 'target' | 'passporting' | 'home' | 'passport' | 'third_country';
 
 // Conflict types
 export type ConflictType =
   | 'classification_divergence'
   | 'obligation_conflict'
   | 'timeline_conflict'
-  | 'decision_conflict';
+  | 'decision_conflict'
+  | 'decision'
+  | 'obligation'
+  | 'classification'
+  | 'timeline';
 
 // Conflict severity levels
 export type ConflictSeverity = 'blocking' | 'warning' | 'info';

@@ -1,4 +1,4 @@
-import type { JurisdictionCode, ComplianceStatus } from './common';
+import type { JurisdictionCode, ComplianceStatus, JurisdictionRole, ConflictSeverity, ConflictType } from './common';
 import type { SourceReference } from './navigate';
 
 /**
@@ -67,11 +67,6 @@ export interface LeafNode {
  * Node types for cross-border decision graphs
  */
 export type NodeType = 'condition' | 'leaf' | 'group' | 'router' | 'obligation' | 'conflict_anchor';
-
-/**
- * Jurisdiction role in a cross-border scenario
- */
-export type JurisdictionRole = 'home' | 'target' | 'passport' | 'third_country';
 
 /**
  * Scope definition for jurisdiction-aware nodes
@@ -272,16 +267,6 @@ export interface JurisdictionEvaluation {
   leafNodeId: string;
   obligationIds: string[];
 }
-
-/**
- * Conflict severity levels
- */
-export type ConflictSeverity = 'blocking' | 'warning' | 'info';
-
-/**
- * Conflict types between jurisdictions
- */
-export type ConflictType = 'decision' | 'obligation' | 'classification' | 'timeline';
 
 /**
  * Resolution strategies for conflicts

@@ -15,8 +15,8 @@ import { MICA_STABLECOIN_RULE } from '@/rules';
 import { useNavigationStore } from '@/stores';
 
 export function CenterPane() {
-  const { canvas, navigationResult, analysisComplete } = useCanvasState();
-  const { tree, selectNode } = useTreeHighlight();
+  const { canvas, analysisComplete } = useCanvasState();
+  const { selectNode } = useTreeHighlight();
   const store = useNavigationStore();
 
   // Demo mode: use client-side evaluation until backend ready
@@ -88,7 +88,7 @@ export function CenterPane() {
                 <DecisionTreeViewer
                   tree={MICA_STABLECOIN_RULE.tree}
                   trace={demoEvaluation?.trace}
-                  onNodeClick={(node) => selectNode(node.nodeId)}
+                  onNodeSelect={(node) => selectNode(node.nodeId)}
                 />
               ) : (
                 <div className="flex h-full items-center justify-center text-slate-400">
