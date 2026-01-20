@@ -14,6 +14,7 @@ const tabs: TabItem[] = [
   { path: '/conflicts', label: 'Conflicts', requiresAnalysis: true },
   { path: '/whatif', label: 'What-If', requiresAnalysis: true },
   { path: '/decoder', label: 'Decoder', requiresAnalysis: true },
+  { path: '/logic', label: 'Logic' },
 ];
 
 export function ViewTabs() {

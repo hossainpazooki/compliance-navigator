@@ -3,3 +3,4 @@ export { Pathway } from './Pathway';
 export { Conflicts } from './Conflicts';
 export { WhatIf } from './WhatIf';
 export { Decoder } from './Decoder';
+export { LogicDemo } from './LogicDemo';

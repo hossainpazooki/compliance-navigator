@@ -89,6 +89,12 @@ export interface TraceNode {
   depth: number;
   /** Source reference if available */
   sourceRef?: SourceReference;
+  /** Links to Digital Library annotation (Droit pattern: connective tissue) */
+  annotationId?: string;
+  /** Regulatory version that sourced this rule, e.g., "MiCA_2023_v1.2" */
+  regulatoryVersion?: string;
+  /** Knowledge engineer's reasoning for this rule encoding */
+  interpretationNote?: string;
 }
 
 /**

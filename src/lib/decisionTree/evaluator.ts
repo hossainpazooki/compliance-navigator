@@ -9,6 +9,67 @@ import type {
 } from '@/types/decisionTree';
 import { isLeafNode } from '@/types/decisionTree';
 
+// ============================================================================
+// Evaluation Cache (Droit pattern: TMS-like efficiency for incremental updates)
+// ============================================================================
+
+interface EvaluationCache {
+  factHash: string;
+  result: EvaluationResult;
+}
+
+/** Cache keyed by treeId, storing results for specific fact hashes */
+const evaluationCache = new Map<string, EvaluationCache>();
+
+/**
+ * Create a stable hash of facts for cache key comparison.
+ * Uses JSON.stringify for simplicity; could be optimized with a proper hash function.
+ */
+function hashFacts(facts: Facts): string {
+  return JSON.stringify(facts, Object.keys(facts).sort());
+}
+
+/**
+ * Get a cached evaluation result if facts haven't changed.
+ * Returns undefined if no cache exists or facts have changed.
+ */
+function getCachedResult(treeId: string, facts: Facts): EvaluationResult | undefined {
+  const cached = evaluationCache.get(treeId);
+  if (!cached) return undefined;
+
+  const factHash = hashFacts(facts);
+  if (cached.factHash !== factHash) return undefined;
+
+  return cached.result;
+}
+
+/**
+ * Store an evaluation result in the cache.
+ */
+function setCachedResult(treeId: string, facts: Facts, result: EvaluationResult): void {
+  evaluationCache.set(treeId, {
+    factHash: hashFacts(facts),
+    result,
+  });
+}
+
+/**
+ * Clear the evaluation cache (useful for testing or memory management).
+ */
+export function clearEvaluationCache(): void {
+  evaluationCache.clear();
+}
+
+/**
+ * Get cache statistics for debugging/monitoring.
+ */
+export function getEvaluationCacheStats(): { size: number; keys: string[] } {
+  return {
+    size: evaluationCache.size,
+    keys: Array.from(evaluationCache.keys()),
+  };
+}
+
 /**
  * Get a nested value from an object using dot-path notation
  * Mirrors Clojure's get-in function
@@ -175,16 +236,46 @@ function createTraceNode(
 }
 
 /**
- * Evaluate a decision tree against facts, generating a full trace
- * Pure function - no side effects
+ * Evaluate a decision tree against facts, generating a full trace.
+ * Supports optional caching for incremental updates (Droit TMS pattern).
  *
+ * @param node - The root of the decision tree
+ * @param facts - The facts to evaluate against
+ * @param treeId - Optional tree ID for caching (enables cache lookup/storage)
  * @returns The final leaf node and the trace of all evaluated conditions
  */
 export function evaluateTree(
   node: DecisionNode,
   facts: Facts,
-  depth = 0,
-  trace: TraceNode[] = []
+  treeId?: string
+): EvaluationResult {
+  // Check cache if treeId provided
+  if (treeId) {
+    const cached = getCachedResult(treeId, facts);
+    if (cached) {
+      return cached;
+    }
+  }
+
+  // Perform evaluation
+  const result = evaluateTreeInternal(node, facts, 0, []);
+
+  // Cache result if treeId provided
+  if (treeId) {
+    setCachedResult(treeId, facts, result);
+  }
+
+  return result;
+}
+
+/**
+ * Internal recursive evaluation (not cached)
+ */
+function evaluateTreeInternal(
+  node: DecisionNode,
+  facts: Facts,
+  depth: number,
+  trace: TraceNode[]
 ): EvaluationResult {
   if (isLeafNode(node)) {
     return { leaf: node, trace };
@@ -198,7 +289,7 @@ export function evaluateTree(
   const newTrace = [...trace, traceNode];
   const nextNode = result ? conditionNode.children.true : conditionNode.children.false;
 
-  return evaluateTree(nextNode, facts, depth + 1, newTrace);
+  return evaluateTreeInternal(nextNode, facts, depth + 1, newTrace);
 }
 
 /**

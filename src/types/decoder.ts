@@ -1,5 +1,8 @@
 import type { ExplanationTier, RiskLevel } from './common';
 
+/** Droit pattern: distinguish grounded (from rule path) vs inferred (LLM reasoning) */
+export type ConfidenceLevel = 'grounded' | 'inferred';
+
 // Citation in explanation
 export interface Citation {
   id: string;
@@ -25,6 +28,8 @@ export interface Explanation {
 export interface ExplanationSummary {
   status: string;
   confidence: number;
+  /** Droit pattern: 'grounded' = from rule traversal, 'inferred' = LLM reasoning */
+  confidence_level: ConfidenceLevel;
   primary_framework: string;
   risk_level: RiskLevel;
 }

@@ -1,6 +1,6 @@
 import { Routes, Route } from 'react-router-dom';
 import { Header, ViewTabs, Footer } from '@/components/layout';
-import { Navigator, Pathway, Conflicts, WhatIf, Decoder } from '@/pages';
+import { Navigator, Pathway, Conflicts, WhatIf, Decoder, LogicDemo } from '@/pages';
 
 function App() {
   return (
@@ -15,6 +15,7 @@ function App() {
             <Route path="/conflicts" element={<Conflicts />} />
             <Route path="/whatif" element={<WhatIf />} />
             <Route path="/decoder" element={<Decoder />} />
+            <Route path="/logic" element={<LogicDemo />} />
           </Routes>
         </main>
         <Footer />
