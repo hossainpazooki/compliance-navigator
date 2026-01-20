@@ -64,9 +64,84 @@ export interface LeafNode {
 }
 
 /**
+ * Node types for cross-border decision graphs
+ */
+export type NodeType = 'condition' | 'leaf' | 'group' | 'router' | 'obligation' | 'conflict_anchor';
+
+/**
+ * Jurisdiction role in a cross-border scenario
+ */
+export type JurisdictionRole = 'home' | 'target' | 'passport' | 'third_country';
+
+/**
+ * Scope definition for jurisdiction-aware nodes
+ */
+export interface Scope {
+  jurisdictions?: JurisdictionCode[];
+  roles?: JurisdictionRole[];
+  frameworks?: string[];
+}
+
+/**
+ * Base node interface for extended node types
+ */
+export interface BaseExtendedNode {
+  nodeId: string;
+  type: NodeType;
+  label: string;
+  scope?: Scope;
+  sourceRef?: SourceReference;
+  tags?: string[];
+}
+
+/**
+ * GroupNode - Collapsible jurisdiction module
+ * Represents a logical grouping of nodes (e.g., "EU MiCA Module")
+ */
+export interface GroupNode extends BaseExtendedNode {
+  type: 'group';
+  /** Module identifier, e.g., "EU_MiCA_Module_v2.3" */
+  moduleId: string;
+  /** Entry point node within the group */
+  entryNodeId: string;
+  /** Optional exit node for the group */
+  exitNodeId?: string;
+  /** Whether the group is collapsed by default in the UI */
+  collapsedByDefault: boolean;
+  /** Child nodes within this group */
+  children: DecisionNode[];
+}
+
+/**
+ * RouterNode - Parallel jurisdiction dispatch
+ * Routes evaluation to multiple jurisdiction-specific subtrees
+ */
+export interface RouterNode extends BaseExtendedNode {
+  type: 'router';
+  /** Branches to different jurisdiction-specific subtrees */
+  branches: Array<{
+    jurisdiction: JurisdictionCode;
+    role: JurisdictionRole;
+    targetNodeId: string;
+  }>;
+}
+
+/**
+ * ConflictAnchorNode - Marks a node involved in a cross-jurisdiction conflict
+ * Used for "highlight in tree" functionality from conflict cards
+ */
+export interface ConflictAnchorNode extends BaseExtendedNode {
+  type: 'conflict_anchor';
+  /** Unique conflict identifier */
+  conflictId: string;
+  /** The other node in the conflict pair */
+  pairedAnchorId: string;
+}
+
+/**
  * A decision tree node (discriminated union)
  */
-export type DecisionNode = ConditionNode | LeafNode;
+export type DecisionNode = ConditionNode | LeafNode | GroupNode | RouterNode | ConflictAnchorNode;
 
 /**
  * A trace of a single condition evaluation
@@ -167,4 +242,73 @@ export function isConditionNode(node: DecisionNode): node is ConditionNode {
 
 export function isLeafNode(node: DecisionNode): node is LeafNode {
   return node.type === 'leaf';
+}
+
+export function isGroupNode(node: DecisionNode): node is GroupNode {
+  return node.type === 'group';
+}
+
+export function isRouterNode(node: DecisionNode): node is RouterNode {
+  return node.type === 'router';
+}
+
+export function isConflictAnchorNode(node: DecisionNode): node is ConflictAnchorNode {
+  return node.type === 'conflict_anchor';
+}
+
+/**
+ * Cross-Border Evaluation Types
+ */
+
+/**
+ * Evaluation result for a single jurisdiction
+ */
+export interface JurisdictionEvaluation {
+  jurisdiction: JurisdictionCode;
+  role: JurisdictionRole;
+  regime_id: string;
+  status: ComplianceStatus;
+  trace: TraceNode[];
+  leafNodeId: string;
+  obligationIds: string[];
+}
+
+/**
+ * Conflict severity levels
+ */
+export type ConflictSeverity = 'blocking' | 'warning' | 'info';
+
+/**
+ * Conflict types between jurisdictions
+ */
+export type ConflictType = 'decision' | 'obligation' | 'classification' | 'timeline';
+
+/**
+ * Resolution strategies for conflicts
+ */
+export type ResolutionStrategy = 'cumulative' | 'stricter' | 'home_jurisdiction';
+
+/**
+ * Cross-border conflict between jurisdictions
+ */
+export interface CrossBorderConflict {
+  conflictId: string;
+  severity: ConflictSeverity;
+  type: ConflictType;
+  jurisdictions: JurisdictionCode[];
+  /** Node IDs for "click conflict → highlight tree" */
+  anchorNodeIds: string[];
+  description: string;
+  resolution_strategy: ResolutionStrategy;
+}
+
+/**
+ * Complete cross-border evaluation result
+ */
+export interface CrossBorderEvaluation {
+  graphId: string;
+  rule_version: string;
+  globalTrace: TraceNode[];
+  jurisdictionEvaluations: JurisdictionEvaluation[];
+  conflicts: CrossBorderConflict[];
 }

@@ -1,10 +1,21 @@
 import { useState, useRef, useCallback, useMemo } from 'react';
 import type { DecisionNode, TraceNode, LeafNode, ConditionNode } from '@/types/decisionTree';
-import { isLeafNode } from '@/types/decisionTree';
+import { isLeafNode, isGroupNode } from '@/types/decisionTree';
 import { calculateLayout, getPathFromTrace, DEFAULT_LAYOUT_CONFIG } from '@/lib/svg/treeLayout';
 import { TreeNode } from './TreeNode';
 import { TreeEdge } from './TreeEdge';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/shared';
+import type { JurisdictionCode } from '@/types/common';
+import { cn } from '@/utils';
+
+export type HighlightSource = 'jurisdiction' | 'pathway' | 'conflict' | 'decoder' | 'search';
+export type ViewMode = 'baseline' | 'whatif-diff' | 'conflict-overlay';
+
+interface ScenarioDiffOverlay {
+  baselineLeafId?: string;
+  whatIfLeafId?: string;
+  changedNodeIds?: string[];
+}
 
 interface DecisionTreeViewerProps {
   tree: DecisionNode;
@@ -12,6 +23,32 @@ interface DecisionTreeViewerProps {
   finalNode?: LeafNode;
   title?: string;
   onNodeSelect?: (node: DecisionNode) => void;
+
+  // Highlighting
+  highlightedNodeIds?: Set<string>;
+  highlightSource?: HighlightSource;
+
+  // Filtering
+  jurisdictionFilter?: JurisdictionCode | null;
+
+  // View modes
+  viewMode?: ViewMode;
+  diffOverlay?: ScenarioDiffOverlay;
+
+  // Events
+  onNodeHover?: (nodeId: string | null) => void;
+  onGroupToggle?: (groupId: string, expanded: boolean) => void;
+
+  // Collapsed groups state
+  collapsedGroups?: Set<string>;
+
+  // External zoom/pan control
+  externalZoom?: number;
+  externalPan?: { x: number; y: number };
+  onZoomChange?: (zoom: number) => void;
+  onPanChange?: (pan: { x: number; y: number }) => void;
+
+  className?: string;
 }
 
 interface Transform {
@@ -26,13 +63,44 @@ export function DecisionTreeViewer({
   finalNode,
   title = 'Decision Tree',
   onNodeSelect,
+  highlightedNodeIds,
+  highlightSource,
+  jurisdictionFilter,
+  viewMode = 'baseline',
+  diffOverlay,
+  onNodeHover,
+  onGroupToggle,
+  collapsedGroups: externalCollapsedGroups,
+  externalZoom,
+  externalPan,
+  onZoomChange,
+  onPanChange,
+  className,
 }: DecisionTreeViewerProps) {
   const svgRef = useRef<SVGSVGElement>(null);
-  const [transform, setTransform] = useState<Transform>({ x: 0, y: 0, scale: 1 });
+  const [internalTransform, setInternalTransform] = useState<Transform>({ x: 0, y: 0, scale: 1 });
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [internalCollapsedGroups, setInternalCollapsedGroups] = useState<Set<string>>(new Set());
+
+  // Use external or internal state
+  const transform = externalPan && externalZoom !== undefined
+    ? { x: externalPan.x, y: externalPan.y, scale: externalZoom }
+    : internalTransform;
+
+  const setTransform = useCallback((updater: Transform | ((prev: Transform) => Transform)) => {
+    if (externalPan && externalZoom !== undefined) {
+      const newTransform = typeof updater === 'function' ? updater(transform) : updater;
+      onZoomChange?.(newTransform.scale);
+      onPanChange?.({ x: newTransform.x, y: newTransform.y });
+    } else {
+      setInternalTransform(updater as Transform | ((prev: Transform) => Transform));
+    }
+  }, [externalPan, externalZoom, transform, onZoomChange, onPanChange]);
+
+  const collapsedGroups = externalCollapsedGroups ?? internalCollapsedGroups;
 
   // Calculate path nodes from trace
   const pathNodeIds = useMemo(() => {
@@ -44,23 +112,85 @@ export function DecisionTreeViewer({
     return ids;
   }, [trace, finalNode]);
 
+  // Combined highlight set (trace path + external highlights)
+  const allHighlightedIds = useMemo(() => {
+    const ids = new Set(pathNodeIds);
+    if (highlightedNodeIds) {
+      highlightedNodeIds.forEach((id) => ids.add(id));
+    }
+    return ids;
+  }, [pathNodeIds, highlightedNodeIds]);
+
   // Calculate layout
   const layout = useMemo(() => {
-    return calculateLayout(tree, DEFAULT_LAYOUT_CONFIG, pathNodeIds);
-  }, [tree, pathNodeIds]);
+    return calculateLayout(tree, DEFAULT_LAYOUT_CONFIG, allHighlightedIds);
+  }, [tree, allHighlightedIds]);
 
-  // Find node by ID
+  // Find node by ID (handles all node types including GroupNode)
   const findNodeById = useCallback((nodeId: string): DecisionNode | null => {
     function search(node: DecisionNode): DecisionNode | null {
       if (node.nodeId === nodeId) return node;
       if (isLeafNode(node)) return null;
-      return search(node.children.true) || search(node.children.false);
+      if (isGroupNode(node)) {
+        for (const child of node.children) {
+          const found = search(child);
+          if (found) return found;
+        }
+        return null;
+      }
+      if (node.type === 'condition') {
+        return search(node.children.true) || search(node.children.false);
+      }
+      return null;
     }
     return search(tree);
   }, [tree]);
 
+  // Handle group toggle
+  const handleGroupToggle = useCallback((groupId: string) => {
+    const isCollapsed = collapsedGroups.has(groupId);
+    if (onGroupToggle) {
+      onGroupToggle(groupId, !isCollapsed);
+    } else {
+      setInternalCollapsedGroups((prev) => {
+        const next = new Set(prev);
+        if (isCollapsed) {
+          next.delete(groupId);
+        } else {
+          next.add(groupId);
+        }
+        return next;
+      });
+    }
+  }, [collapsedGroups, onGroupToggle]);
+
   // Get hovered node details
   const hoveredNode = hoveredNodeId ? findNodeById(hoveredNodeId) : null;
+
+  // Handle hover with external callback
+  const handleNodeHover = useCallback((nodeId: string | null) => {
+    setHoveredNodeId(nodeId);
+    onNodeHover?.(nodeId);
+  }, [onNodeHover]);
+
+  // Get highlight color based on source
+  const getHighlightColor = useCallback((nodeId: string): string | undefined => {
+    if (!highlightedNodeIds?.has(nodeId)) return undefined;
+    switch (highlightSource) {
+      case 'jurisdiction':
+        return '#22d3ee'; // cyan
+      case 'pathway':
+        return '#a855f7'; // purple
+      case 'conflict':
+        return '#ef4444'; // red
+      case 'decoder':
+        return '#f59e0b'; // amber
+      case 'search':
+        return '#10b981'; // emerald
+      default:
+        return '#22d3ee';
+    }
+  }, [highlightedNodeIds, highlightSource]);
 
   // Handle node selection
   const handleNodeSelect = useCallback((nodeId: string) => {
@@ -118,11 +248,16 @@ export function DecisionTreeViewer({
   }, []);
 
   return (
-    <Card variant="bordered">
+    <Card variant="bordered" className={className}>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="flex items-center gap-2">
           <span className="text-blue-400">🌳</span>
           {title}
+          {viewMode !== 'baseline' && (
+            <span className="ml-2 rounded bg-purple-500/20 px-2 py-0.5 text-xs text-purple-300">
+              {viewMode === 'whatif-diff' ? 'What-If' : 'Conflicts'}
+            </span>
+          )}
         </CardTitle>
         <div className="flex items-center gap-2">
           <button
@@ -185,8 +320,13 @@ export function DecisionTreeViewer({
                   key={layoutNode.id}
                   layoutNode={layoutNode}
                   isSelected={selectedNodeId === layoutNode.id}
+                  isHighlighted={highlightedNodeIds?.has(layoutNode.id)}
+                  highlightColor={getHighlightColor(layoutNode.id)}
+                  isCollapsed={collapsedGroups.has(layoutNode.id)}
+                  viewMode={viewMode}
                   onSelect={handleNodeSelect}
-                  onHover={setHoveredNodeId}
+                  onHover={handleNodeHover}
+                  onGroupToggle={handleGroupToggle}
                 />
               ))}
             </g>
