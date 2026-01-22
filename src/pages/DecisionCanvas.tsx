@@ -5,6 +5,7 @@
 
 import { CanvasProvider } from '@/contexts';
 import {
+  CanvasHeader,
   CanvasLayout,
   LeftRail,
   CenterPane,
@@ -15,6 +16,7 @@ import {
 export function DecisionCanvas() {
   return (
     <CanvasProvider>
+      <CanvasHeader />
       <CanvasLayout>
         <LeftRail />
         <CenterPane />

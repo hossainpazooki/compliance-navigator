@@ -4,6 +4,7 @@
 
 // Layout components
 export { CanvasLayout, LeftRailArea, CenterPaneArea, RightRailArea, WorkbenchArea } from './CanvasLayout';
+export { CanvasHeader } from './CanvasHeader';
 export { PanelHeader } from './PanelHeader';
 export { LeftRail } from './LeftRail';
 export { CenterPane } from './CenterPane';
