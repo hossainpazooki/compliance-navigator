@@ -38,10 +38,10 @@ export function Header() {
         </div>
         <div className="flex items-center gap-3">
           <Link
-            to="/canvas"
+            to="/"
             className="rounded-lg bg-blue-500/20 px-4 py-2 text-sm font-medium text-blue-400 transition-colors hover:bg-blue-500/30"
           >
-            Try Decision Canvas
+            Decision Canvas
           </Link>
           {backendStatus === 'checking' && (
             <span className="rounded-full bg-yellow-500/20 px-3 py-1 text-sm text-yellow-400">

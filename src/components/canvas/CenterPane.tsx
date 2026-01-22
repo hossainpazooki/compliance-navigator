@@ -16,7 +16,7 @@ import { useNavigationStore } from '@/stores';
 
 export function CenterPane() {
   const { canvas, analysisComplete } = useCanvasState();
-  const { selectNode } = useTreeHighlight();
+  const { selectNode, tree } = useTreeHighlight();
   const store = useNavigationStore();
 
   // Demo mode: use client-side evaluation until backend ready
@@ -88,6 +88,8 @@ export function CenterPane() {
                 <DecisionTreeViewer
                   tree={MICA_STABLECOIN_RULE.tree}
                   trace={demoEvaluation?.trace}
+                  highlightedNodeIds={tree.highlightedNodeIds}
+                  highlightSource={tree.highlightSource}
                   onNodeSelect={(node) => selectNode(node.nodeId)}
                 />
               ) : (

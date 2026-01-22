@@ -83,6 +83,7 @@ export interface RuleConflict {
   resolution_strategy: 'cumulative' | 'stricter' | 'home_jurisdiction' | 'satisfy_both' | 'earliest';
   resolution_note?: string;
   obligations?: string[];
+  anchor_node_ids?: string[]; // Tree nodes involved in this conflict (Phase 6)
 }
 
 // Timeline for pathway step

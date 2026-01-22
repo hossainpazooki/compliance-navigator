@@ -1,16 +1,18 @@
 /**
  * BottomWorkbench Component
  * Tabbed workbench for Jurisdictions, Pathway, Conflicts, What-If
- * Phase 6 will add full compound component implementation
+ * Phase 6: Conflict highlighting wired to tree
+ * Phase 7: What-If scenario analysis UI
  */
 
 import { useState } from 'react';
-import { usePanelState, useCanvasState } from '@/hooks';
+import { usePanelState, useCanvasState, useTreeHighlight, useCounterfactual } from '@/hooks';
 import { useResultsStore } from '@/stores';
-import { Badge, Button } from '@/components/shared';
+import { Badge, Button, LoadingSpinner } from '@/components/shared';
 import { WorkbenchArea } from './CanvasLayout';
 import { PanelHeader } from './PanelHeader';
 import { JURISDICTION_MAP } from '@/constants';
+import type { ScenarioType } from '@/types/common';
 
 type WorkbenchTab = 'jurisdictions' | 'pathway' | 'conflicts' | 'whatif';
 
@@ -21,11 +23,24 @@ const TABS: Array<{ id: WorkbenchTab; label: string }> = [
   { id: 'whatif', label: 'What-If' },
 ];
 
+const SCENARIO_TYPES: Array<{ type: ScenarioType; label: string; description: string }> = [
+  { type: 'jurisdiction_change', label: 'Jurisdiction', description: 'Change target jurisdiction' },
+  { type: 'entity_change', label: 'Entity Type', description: 'Change issuer/actor type' },
+  { type: 'threshold', label: 'Threshold', description: 'Adjust reserve amount' },
+  { type: 'temporal', label: 'Temporal', description: 'Change effective date' },
+];
+
 export function BottomWorkbench() {
   const { panels, togglePanel } = usePanelState();
   const { analysisComplete } = useCanvasState();
-  const { navigationResult } = useResultsStore();
+  const { navigationResult, counterfactualResults } = useResultsStore();
+  const { highlightNodes, clearHighlight } = useTreeHighlight();
+  const { analyze, isLoading: isAnalyzing } = useCounterfactual();
   const [activeTab, setActiveTab] = useState<WorkbenchTab>('jurisdictions');
+
+  // What-If state
+  const [selectedScenarioType, setSelectedScenarioType] = useState<ScenarioType | null>(null);
+  const [scenarioParams, setScenarioParams] = useState<Record<string, unknown>>({});
 
   const isExpanded = panels.workbench === 'expanded';
 
@@ -38,6 +53,30 @@ export function BottomWorkbench() {
   const summary = analysisComplete
     ? `${jurisdictionCount} jurisdictions • ${pathwaySteps} steps • ${conflictCount} conflicts`
     : 'Run analysis to see workbench';
+
+  // Handle conflict highlight
+  const handleHighlightConflict = (anchorNodeIds?: string[]) => {
+    if (anchorNodeIds?.length) {
+      highlightNodes(anchorNodeIds, 'conflict');
+    } else {
+      // If no anchor nodes, clear highlight
+      clearHighlight();
+    }
+  };
+
+  // Handle What-If analysis
+  const handleRunWhatIf = () => {
+    if (!selectedScenarioType) return;
+
+    analyze({
+      type: selectedScenarioType,
+      name: `${selectedScenarioType} scenario`,
+      parameters: scenarioParams,
+    });
+  };
+
+  // Get the latest counterfactual result
+  const latestResult = counterfactualResults?.[counterfactualResults.length - 1];
 
   return (
     <WorkbenchArea>
@@ -152,7 +191,7 @@ export function BottomWorkbench() {
                 </div>
               )}
 
-              {/* Conflicts Tab */}
+              {/* Conflicts Tab - Phase 6: Wired to tree highlight */}
               {activeTab === 'conflicts' && (
                 <div className="flex gap-4 overflow-x-auto pb-2">
                   {conflictCount === 0 ? (
@@ -189,10 +228,7 @@ export function BottomWorkbench() {
                           variant="ghost"
                           size="sm"
                           className="mt-2"
-                          onClick={() => {
-                            // Phase 6: Will implement highlight in tree
-                            console.log('Highlight conflict in tree');
-                          }}
+                          onClick={() => handleHighlightConflict(conflict.anchor_node_ids)}
                         >
                           Highlight in tree
                         </Button>
@@ -202,16 +238,185 @@ export function BottomWorkbench() {
                 </div>
               )}
 
-              {/* What-If Tab */}
+              {/* What-If Tab - Phase 7: Full implementation */}
               {activeTab === 'whatif' && (
-                <div className="flex gap-4">
-                  <div className="rounded-lg border border-dashed border-slate-600 p-6 text-center">
-                    <p className="text-slate-400">
-                      What-If analysis coming in Phase 7
-                    </p>
-                    <p className="mt-2 text-sm text-slate-500">
-                      Compare scenarios and see decision diffs
-                    </p>
+                <div className="flex gap-6">
+                  {/* Scenario Selector */}
+                  <div className="w-80 shrink-0">
+                    <h4 className="mb-3 text-sm font-medium text-slate-300">Select Scenario Type</h4>
+                    <div className="grid grid-cols-2 gap-2">
+                      {SCENARIO_TYPES.map((scenario) => (
+                        <button
+                          key={scenario.type}
+                          type="button"
+                          onClick={() => {
+                            setSelectedScenarioType(scenario.type);
+                            setScenarioParams({});
+                          }}
+                          className={`rounded-lg border p-3 text-left transition-colors ${
+                            selectedScenarioType === scenario.type
+                              ? 'border-blue-500 bg-blue-500/10 text-white'
+                              : 'border-slate-700 bg-slate-800/50 text-slate-400 hover:border-slate-600'
+                          }`}
+                        >
+                          <p className="text-sm font-medium">{scenario.label}</p>
+                          <p className="mt-1 text-xs text-slate-500">{scenario.description}</p>
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Parameter Input based on scenario type */}
+                    {selectedScenarioType && (
+                      <div className="mt-4">
+                        <h4 className="mb-2 text-sm font-medium text-slate-300">Parameters</h4>
+                        {selectedScenarioType === 'jurisdiction_change' && (
+                          <select
+                            className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-white"
+                            value={(scenarioParams.target_jurisdiction as string) || ''}
+                            onChange={(e) => setScenarioParams({ target_jurisdiction: e.target.value })}
+                          >
+                            <option value="">Select jurisdiction...</option>
+                            <option value="US">United States</option>
+                            <option value="UK">United Kingdom</option>
+                            <option value="SG">Singapore</option>
+                            <option value="CH">Switzerland</option>
+                            <option value="JP">Japan</option>
+                          </select>
+                        )}
+                        {selectedScenarioType === 'entity_change' && (
+                          <select
+                            className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-white"
+                            value={(scenarioParams.entity_type as string) || ''}
+                            onChange={(e) => setScenarioParams({ entity_type: e.target.value })}
+                          >
+                            <option value="">Select entity type...</option>
+                            <option value="credit_institution">Credit Institution</option>
+                            <option value="e_money_institution">E-Money Institution</option>
+                            <option value="payment_institution">Payment Institution</option>
+                            <option value="unregulated">Unregulated Entity</option>
+                          </select>
+                        )}
+                        {selectedScenarioType === 'threshold' && (
+                          <input
+                            type="number"
+                            placeholder="Reserve amount (EUR)"
+                            className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-white"
+                            value={(scenarioParams.reserve_value_eur as number) || ''}
+                            onChange={(e) => setScenarioParams({ reserve_value_eur: Number(e.target.value) })}
+                          />
+                        )}
+                        {selectedScenarioType === 'temporal' && (
+                          <input
+                            type="date"
+                            className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-white"
+                            value={(scenarioParams.effective_date as string) || ''}
+                            onChange={(e) => setScenarioParams({ effective_date: e.target.value })}
+                          />
+                        )}
+
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          className="mt-4 w-full"
+                          onClick={handleRunWhatIf}
+                          disabled={isAnalyzing || Object.keys(scenarioParams).length === 0}
+                        >
+                          {isAnalyzing ? (
+                            <>
+                              <LoadingSpinner size="sm" className="mr-2" />
+                              Analyzing...
+                            </>
+                          ) : (
+                            'Run What-If Analysis'
+                          )}
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Delta Analysis Results */}
+                  <div className="flex-1">
+                    {latestResult ? (
+                      <div className="rounded-lg border border-slate-700 bg-slate-800/50 p-4">
+                        <h4 className="mb-3 text-sm font-medium text-slate-300">Delta Analysis</h4>
+
+                        {/* Status Change */}
+                        <div className="mb-4 flex items-center gap-3">
+                          <Badge variant={latestResult.delta.status_changed ? 'warning' : 'success'}>
+                            {latestResult.delta.status_changed ? 'Status Changed' : 'Status Unchanged'}
+                          </Badge>
+                          {latestResult.delta.status_changed && (
+                            <span className="text-sm text-slate-400">
+                              {latestResult.delta.status_from} → {latestResult.delta.status_to}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Risk Delta */}
+                        <div className="mb-4">
+                          <p className="text-xs text-slate-500">Risk Delta</p>
+                          <div className="flex items-center gap-2">
+                            <div className={`text-lg font-medium ${
+                              latestResult.delta.risk_delta > 0 ? 'text-red-400' :
+                              latestResult.delta.risk_delta < 0 ? 'text-green-400' :
+                              'text-slate-400'
+                            }`}>
+                              {latestResult.delta.risk_delta > 0 ? '+' : ''}{latestResult.delta.risk_delta}
+                            </div>
+                            <div className="flex-1 h-2 bg-slate-700 rounded-full overflow-hidden">
+                              <div
+                                className={`h-full ${
+                                  latestResult.delta.risk_delta > 0 ? 'bg-red-500' :
+                                  latestResult.delta.risk_delta < 0 ? 'bg-green-500' :
+                                  'bg-slate-500'
+                                }`}
+                                style={{ width: `${Math.abs(latestResult.delta.risk_delta) * 25}%` }}
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* New Requirements */}
+                        {latestResult.delta.new_requirements.length > 0 && (
+                          <div className="mb-3">
+                            <p className="text-xs text-slate-500 mb-1">New Requirements</p>
+                            <ul className="text-sm text-amber-400">
+                              {latestResult.delta.new_requirements.map((req, i) => (
+                                <li key={i}>+ {req}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
+                        {/* Removed Requirements */}
+                        {latestResult.delta.removed_requirements.length > 0 && (
+                          <div>
+                            <p className="text-xs text-slate-500 mb-1">Removed Requirements</p>
+                            <ul className="text-sm text-green-400">
+                              {latestResult.delta.removed_requirements.map((req, i) => (
+                                <li key={i}>- {req}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
+                        {/* Explanation */}
+                        {latestResult.explanation && (
+                          <div className="mt-4 border-t border-slate-700 pt-4">
+                            <p className="text-sm text-slate-300">{latestResult.explanation.summary}</p>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="flex h-full items-center justify-center rounded-lg border border-dashed border-slate-600 p-6 text-center">
+                        <div>
+                          <p className="text-slate-400">Select a scenario and run analysis</p>
+                          <p className="mt-2 text-sm text-slate-500">
+                            Compare outcomes and see how changes affect compliance
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}

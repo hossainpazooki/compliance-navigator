@@ -9,12 +9,12 @@ interface TabItem {
 }
 
 const tabs: TabItem[] = [
-  { path: '/', label: 'Navigator' },
-  { path: '/pathway', label: 'Pathway', requiresAnalysis: true },
-  { path: '/conflicts', label: 'Conflicts', requiresAnalysis: true },
-  { path: '/whatif', label: 'What-If', requiresAnalysis: true },
-  { path: '/decoder', label: 'Decoder', requiresAnalysis: true },
-  { path: '/logic', label: 'Logic' },
+  { path: '/legacy', label: 'Navigator' },
+  { path: '/legacy/pathway', label: 'Pathway', requiresAnalysis: true },
+  { path: '/legacy/conflicts', label: 'Conflicts', requiresAnalysis: true },
+  { path: '/legacy/whatif', label: 'What-If', requiresAnalysis: true },
+  { path: '/legacy/decoder', label: 'Decoder', requiresAnalysis: true },
+  { path: '/legacy/logic', label: 'Logic' },
 ];
 
 export function ViewTabs() {

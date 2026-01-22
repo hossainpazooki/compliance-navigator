@@ -6,12 +6,12 @@ function App() {
   return (
     <div className="min-h-screen bg-slate-900 text-white">
       <Routes>
-        {/* Decision Canvas: Full-screen single-canvas layout */}
-        <Route path="/canvas" element={<DecisionCanvas />} />
+        {/* Decision Canvas: Default full-screen single-canvas layout */}
+        <Route path="/" element={<DecisionCanvas />} />
 
         {/* Legacy tab-based layout */}
         <Route
-          path="/*"
+          path="/legacy/*"
           element={
             <div className="mx-auto max-w-7xl p-6">
               <Header />
