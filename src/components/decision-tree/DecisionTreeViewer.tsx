@@ -126,20 +126,19 @@ export function DecisionTreeViewer({
     return calculateLayout(tree, DEFAULT_LAYOUT_CONFIG, allHighlightedIds);
   }, [tree, allHighlightedIds]);
 
-  // Center root node at top on initial load
+  // Center tree at top on initial load
   useEffect(() => {
     if (hasInitialized || !svgRef.current || layout.nodes.length === 0) return;
 
     const svgRect = svgRef.current.getBoundingClientRect();
-    const rootNode = layout.nodes[0];
     const scale = 0.65;
 
-    // Center horizontally: position root node center at SVG center
-    const rootCenterX = rootNode.x + rootNode.width / 2;
-    const x = (svgRect.width / 2) - (rootCenterX * scale);
+    // Center the entire tree layout horizontally
+    const treeCenterX = layout.width / 2;
+    const x = (svgRect.width / 2) - (treeCenterX * scale);
 
-    // Position root near top with some padding
-    const y = 40 - (rootNode.y * scale);
+    // Position tree near top with padding
+    const y = 30;
 
     setInternalTransform({ x, y, scale });
     setHasInitialized(true);
@@ -252,7 +251,7 @@ export function DecisionTreeViewer({
     }));
   }, []);
 
-  // Reset view to centered root at 65%
+  // Reset view to centered tree at 65%
   const handleReset = useCallback(() => {
     if (!svgRef.current || layout.nodes.length === 0) {
       setTransform({ x: 0, y: 0, scale: 0.65 });
@@ -260,12 +259,11 @@ export function DecisionTreeViewer({
     }
 
     const svgRect = svgRef.current.getBoundingClientRect();
-    const rootNode = layout.nodes[0];
     const scale = 0.65;
 
-    const rootCenterX = rootNode.x + rootNode.width / 2;
-    const x = (svgRect.width / 2) - (rootCenterX * scale);
-    const y = 40 - (rootNode.y * scale);
+    const treeCenterX = layout.width / 2;
+    const x = (svgRect.width / 2) - (treeCenterX * scale);
+    const y = 30;
 
     setTransform({ x, y, scale });
   }, [layout, setTransform]);

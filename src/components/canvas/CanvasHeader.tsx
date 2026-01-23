@@ -26,16 +26,23 @@ export function CanvasHeader() {
 
   return (
     <header className="flex h-16 shrink-0 items-center justify-between border-b border-slate-700 bg-slate-900 px-4">
-      <div className="flex items-center gap-3">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-violet-500">
-          <span className="text-sm font-bold text-white">CN</span>
+      <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-violet-500">
+            <span className="text-sm font-bold text-white">CN</span>
+          </div>
+          <div>
+            <h1 className="text-base font-semibold text-white">
+              Compliance Navigator
+            </h1>
+            <p className="text-xs text-slate-400">
+              Decision Canvas
+            </p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-base font-semibold text-white">
-            Compliance Navigator
-          </h1>
-          <p className="text-xs text-slate-400">
-            Decision Canvas
+        <div className="hidden md:block border-l border-slate-700 pl-4">
+          <p className="text-sm text-slate-400">
+            Cross-border DeFi regulatory compliance across EU, UK, US, CH, SG
           </p>
         </div>
       </div>
