@@ -5,3 +5,4 @@ export * from './decoder';
 export * from './counterfactual';
 export * from './decisionTree';
 export * from './canvas';
+export * from './jurisdiction';

@@ -1,8 +1,8 @@
-# Compliance Navigator
+# Digital Assets Cross-Border
 
-> Cross-border DeFi regulatory compliance analysis across EU (MiCA), UK, US, Switzerland, and Singapore.
+> Cross-border digital assets regulatory compliance analysis across EU (MiCA), UK, US, Switzerland, and Singapore.
 
-**[Live Demo](https://compliance-navigator-tau.vercel.app)** | [Backend Repo](https://github.com/hossainpazooki/regulatory-ke-workbench)
+**[Live Demo](https://digital-assets-cross-border.vercel.app)** | [Backend Repo](https://github.com/hossainpazooki/regulatory-ke-workbench)
 
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue)
 ![React](https://img.shields.io/badge/React-18.2-61dafb)
@@ -10,7 +10,7 @@
 
 ## Overview
 
-[![Decision Canvas](docs/screenshot.png)](https://compliance-navigator-tau.vercel.app)
+[![Decision Canvas](docs/screenshot.png)](https://digital-assets-cross-border.vercel.app)
 
 ## Features
 
@@ -57,8 +57,8 @@ sequenceDiagram
 ## Quick Start
 
 ```bash
-git clone https://github.com/hossainpazooki/defi-compliance-navigator.git
-cd defi-compliance-navigator
+git clone https://github.com/hossainpazooki/digital-assets-cross-border.git
+cd digital-assets-cross-border
 npm install
 npm run dev
 ```
